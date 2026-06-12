@@ -1,4 +1,4 @@
-# CS495 Capstone: Final Report
+# CS495 Capstone: Research Report
 
 **Title:** Integer Optimization for Logistics Assignment, with a Three-Language Branch & Bound Study
 **Author:** Peter Kamau
@@ -93,13 +93,19 @@ Raw data: `benchmark_results_all_three.json`, `benchmark_results_bb.json`.
 
 *Figure 2. Branch & Bound: same instances, now measured in microseconds. The y-axis units shift from seconds (Figure 1) to microseconds (Figure 2). That gap is the algorithmic effect.*
 
-### 3.4 What the Numbers Show
+### 3.4 Summary of Findings
+
+**Hand-built Branch & Bound** achieved the best wall-clock performance among the four solver implementations tested, returning the verified optimal value of 1153 at n = 25 in **96.5 µs (Python), 5 µs (C++), and 1.7 µs (x86-64 ASM)** on a single Windows 10 desktop. The headline number is the **~1,059,000× speedup over the Python brute-force baseline** on the same instance (102.22 s → 96.5 µs), and the same B&B algorithm sits inside PuLP/COIN-CBC, which solves the production driver-to-region ILP in ~28 ms. The result holds across every tested instance from n = 3 to n = 25; the language ranking (ASM < C++ < Python) is preserved across *both* the brute-force and B&B implementations; and nine pytest checks plus 50 random-instance fuzz tests caught no disagreements between B&B and the brute-force oracle.
+
+**Scope:** the findings cover synthetic, uncorrelated 0-1 knapsack instances solved on a single machine with single-run wall-clock measurements. They do **not** cover (a) correlated, inverse-correlated, or subset-sum knapsack families designed to defeat LP-relaxation pruning (Pisinger 1997), (b) statistical confidence intervals from repeated runs, or (c) instance sizes beyond n = 25 for brute force. The driver-to-region ILP result is from a synthetic 4-driver × 3-region instance, not a production dataset.
+
+### 3.5 What the Numbers Show
 
 - **Algorithmic effect.** B&B closes the gap with brute force by orders of magnitude that grow with n. At n = 25, Python B&B is approximately one million times faster than Python brute force and returns the identical optimum.
 - **Language effect.** Holding the algorithm fixed, the ranking is consistent: ASM > C++ > Python. Within B&B, C++ averages ~13× over Python and ASM averages ~52× over Python (~3× over C++).
 - **Independence.** Algorithmic and language wins multiply. The language ranking is the same regardless of which algorithm is used.
 
-### 3.5 Scaling Analysis
+### 3.6 Scaling Analysis
 
 Three quantitative checks confirm that the empirical curves match the expected `O(2^n)` complexity and that the language gap behaves as predicted.
 
@@ -153,7 +159,7 @@ The two effects observed in Section 3 (algorithmic speedup and language speedup)
 
 *Figure 4. Algorithm beats hardware. PuLP/CBC, written in Python and calling a C solver, finishes well under a second at n = 25, approximately **129× faster** than the C++ brute force on the same instance and **580× faster** than the x86-64 ASM brute force. A smarter algorithm in a slower language beats brute force in the fastest one.*
 
-Algorithmic choice and language choice are not interchangeable. A constant-factor language win (Section 3.5, plateauing around 21× for Python vs ASM) is dwarfed by the algorithmic gap (six orders of magnitude at n = 25). Both effects are real and both matter, but on exponential problems the algorithm dominates.
+Algorithmic choice and language choice are not interchangeable. A constant-factor language win (Section 3.6, plateauing around 21× for Python vs ASM) is dwarfed by the algorithmic gap (six orders of magnitude at n = 25). Both effects are real and both matter, but on exponential problems the algorithm dominates.
 
 ## 5. Verification
 
